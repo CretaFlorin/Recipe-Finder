@@ -1,0 +1,133 @@
+.recipe {
+  width: auto;
+  height: auto;
+  margin-top: 64px;
+
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 64px;
+
+  &__img-desc {
+    width: 400px;
+    height: auto;
+    //
+    display: flex;
+    flex-direction: column;
+    gap: 64px;
+
+    img {
+      width: 400px;
+      height: 400px;
+      background-color: #e3e3e3;
+    }
+
+    .description {
+      width: 400px;
+      height: auto;
+      //
+      display: flex;
+      justify-content: space-between;
+
+      .name-duration {
+        width: 376px;
+        height: 54px;
+
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+
+        .name {
+          font-family: "Outfit", sans-serif;
+          font-weight: 600;
+          font-size: 24px;
+          line-height: 1.2;
+          letter-spacing: -0.5px;
+        }
+
+        .duration {
+          height: 23px;
+          font-family: "Outfit", sans-serif;
+          font-weight: 400;
+          font-style: normal;
+          font-size: 14px;
+          line-height: 1.4;
+          letter-spacing: 0;
+        }
+      }
+
+      .favorite {
+        width: 24px;
+        height: 54px;
+        //
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        //
+        color: #65558f;
+        cursor: pointer;
+      }
+    }
+  }
+
+  &__details {
+    width: auto;
+    height: auto;
+    //
+    display: flex;
+    flex-direction: column;
+    gap: 64px;
+
+    .ingredients {
+      width: 400px;
+      height: auto;
+      //
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+
+      &__title {
+        height: 23px;
+        font-family: "Outfit", sans-serif;
+        line-height: 1.4rem;
+      }
+
+      &__list {
+        list-style: none;
+        padding-left: 10px;
+        margin-left: 0;
+        //
+        display: flex;
+        flex-direction: column;
+
+        .list-item {
+          height: auto;
+          position: relative;
+          padding-left: 14px;
+          line-height: 1.4rem;
+
+          &::before {
+            content: "";
+            position: absolute;
+            top: 9px;
+            left: 0;
+            width: 3.5px;
+            height: 3.5px;
+            background-color: #333;
+            border-radius: 50%;
+          }
+        }
+      }
+    }
+
+    .instructions {
+      width: 400px;
+
+      &__title {
+      }
+
+      &__title {
+      }
+    }
+  }
+}

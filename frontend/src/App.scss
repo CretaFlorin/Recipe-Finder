@@ -1,0 +1,31 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
+
+
+$primary-color: red;
+$secondary-color: red;
+$text-color: #000000;
+$background-color: #F5F5F5;
+
+#root {
+  width: 100%;
+
+  --bg: #{$background-color};
+  --primary: #{$primary-color};
+  --seconrady: #{$secondary-color};
+  --text: #{$text-color};
+}
+
+body {
+  margin: 0 !important;
+  font-family: "Outfit", sans-serif;
+  color: $text-color;
+  background-color: $background-color;
+}
+
+.react-loading-skeleton {
+  line-height: none;
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
