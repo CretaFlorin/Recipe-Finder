@@ -1,75 +1,43 @@
 import "./HomePage.scss";
 import RecipeCard from "../components/RecipeCard";
 import SearchIcon from "../components/icons/SearchIcon";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
-
-export type Recipe = {
-  id: number;
-  name: string;
-  duration: string;
-  favorite: boolean;
-  ingredients: string[];
-  instructions: string[];
-};
-
-enum RecipeTypes {
-  Favorites = "favorites",
-  Generated = "generated",
-}
+import { mdiArrowLeft } from "@mdi/js";
+import Icon from "@mdi/react";
+import { v4 as uuidv4 } from "uuid";
+import {
+  type RecipeType,
+  type Recipe,
+  useRecipeStore,
+} from "../stores/useRecipeStore";
 
 export default function HomePage() {
-  const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const favoriteRecipes: Recipe[] = useRecipeStore(
+    (state) => state.favoriteRecipes
+  );
+  const generatedRecipes: Recipe[] = useRecipeStore(
+    (state) => state.generatedRecipes
+  );
+  const recipeType: RecipeType = useRecipeStore((state) => state.recipeType);
+
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
-  const [recipeType, setRecipeType] = useState<RecipeTypes>(() => {
-    const saved = localStorage.getItem("recipeType");
-    return saved === RecipeTypes.Favorites || saved === RecipeTypes.Generated
-      ? (saved as RecipeTypes)
-      : RecipeTypes.Favorites;
-  });
 
-  useEffect(() => {
-    if (recipeType === RecipeTypes.Favorites) {
-      axios
-        .get<Recipe[]>("http://localhost:3000/recipes")
-        .then((response) => {
-          const favorites = response.data;
-          setRecipes(favorites);
-        })
-        .catch((error) => {
-          console.error("Error fetching favorites:", error);
-        });
-    } else if (recipeType === RecipeTypes.Generated) {
-      const generated = localStorage.getItem("generatedRecipes");
-      console.log("---", generated);
+  const recipes =
+    recipeType === "favorites" ? favoriteRecipes : generatedRecipes;
 
-      if (generated) {
-        try {
-          const parsed = JSON.parse(generated);
-          setRecipes(parsed);
-        } catch (error) {
-          console.error(
-            `Error parsing genenratedRecipes from localStorage:`,
-            error
-          );
-        }
-      } else {
-        setRecipes([]);
-      }
-    }
-  }, [recipeType]);
-
-  const sendPrompt = async () => {
+  const sendPrompt = async (sendNegative: boolean = false) => {
     if (!searchTerm.trim()) return;
 
     setLoading(true);
-    goToGenerated();
+    useRecipeStore.getState().setRecipeType("generated");
 
     try {
       const response = await axios.post("http://localhost:3000/ai/chat", {
         prompt: searchTerm,
+        negative: sendNegative ? JSON.stringify(generatedRecipes) : "",
       });
 
       const recipes = response.data.reply;
@@ -78,8 +46,13 @@ export default function HomePage() {
         throw new Error("Invalid format: 'recipes' should be an array.");
       }
 
-      localStorage.setItem("generatedRecipes", JSON.stringify(recipes));
-      setRecipes(recipes);
+      const recipesWithIds = recipes.map((r: Recipe) => ({
+        ...r,
+        id: uuidv4(),
+        favorite: false,
+      }));
+
+      useRecipeStore.getState().setGeneratedRecipes(recipesWithIds);
     } catch (err) {
       console.error("Failed to parse AI response:", err);
     } finally {
@@ -87,41 +60,8 @@ export default function HomePage() {
     }
   };
 
-  const makeFavorite = async (id: number, currentFav: boolean) => {
-    console.log("FAV:", id, currentFav);
-    setRecipes((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, favorite: !currentFav } : r))
-    );
-
-    try {
-      await axios.patch(`http://localhost:3000/recipes/${id}/favorite`, {
-        favorite: !currentFav,
-      });
-    } catch (err) {
-      setRecipes((prev) =>
-        prev.map((r) => (r.id === id ? { ...r, favorite: currentFav } : r))
-      );
-      console.error("Failed to update favorite:", err);
-    }
-  };
-
-  const goToFavorites = () => {
-    localStorage.setItem("recipeType", RecipeTypes.Favorites);
-    setRecipeType(RecipeTypes.Favorites);
-  };
-
-  const goToGenerated = () => {
-    localStorage.setItem("recipeType", RecipeTypes.Generated);
-    console.log(localStorage.getItem("generatedRecipes"));
-    setRecipeType(RecipeTypes.Generated);
-  };
-
   return (
     <div className="homepage">
-      <div className="view-toggle">
-        <button onClick={goToFavorites}>View Favorites</button>
-        <button onClick={goToGenerated}>View Suggested</button>
-      </div>
       <section>
         <div className="search-field">
           <input
@@ -133,7 +73,7 @@ export default function HomePage() {
               if (e.key === "Enter") sendPrompt();
             }}
           />
-          <div onClick={sendPrompt}>
+          <div onClick={() => sendPrompt()}>
             <SearchIcon size={16} />
           </div>
         </div>
@@ -141,9 +81,16 @@ export default function HomePage() {
 
       <section className="recipes">
         <span className="recipes__title">
-          {recipeType === RecipeTypes.Favorites
-            ? "Favorites"
-            : "Suggested recipes"}
+          {recipeType === "generated" ? (
+            <span
+              onClick={() => {
+                useRecipeStore.getState().setRecipeType("favorites");
+              }}
+            >
+              <Icon className="back-icon" path={mdiArrowLeft} size={1} />
+            </span>
+          ) : null}
+          {recipeType === "favorites" ? "Favorites" : "Suggested recipes"}
         </span>
         {loading ? (
           Array.from({ length: 3 }).map((_, index) => (
@@ -157,33 +104,38 @@ export default function HomePage() {
             />
           ))
         ) : recipes.length ? (
-          recipes.map(({ id, name, duration, favorite }) => (
-            <Link
-              key={id}
-              to={`/recipes/${id}`}
-              style={{ textDecoration: "none", color: "inherit" }}
-              state={{
-                name: name,
-                duration: duration,
-                favorite: favorite,
-                inDB: recipeType === RecipeTypes.Favorites,
-              }}
-            >
-              <RecipeCard
-                title={name}
-                duration={duration}
-                isFavorite={favorite}
-                onToggleFavorite={(evt) => {
-                  evt.preventDefault();
-                  makeFavorite(id, favorite);
+          <>
+            {recipes.map(({ id, name, duration, favorite }) => (
+              <Link
+                key={id}
+                to={`/details/${id}`}
+                style={{ textDecoration: "none", color: "inherit" }}
+                state={{
+                  id: id,
+                  name: name,
+                  duration: duration,
+                  favorite: favorite,
                 }}
-                isLoading={false}
-              />
-            </Link>
-          ))
+              >
+                <RecipeCard
+                  title={name}
+                  duration={duration}
+                  isFavorite={favorite}
+                  onToggleFavorite={(evt) => {
+                    evt.preventDefault();
+                    useRecipeStore.getState().toggleFavorite(id, favorite);
+                  }}
+                  isLoading={false}
+                />
+              </Link>
+            ))}
+            <div className="dont-like">
+              <button onClick={() => sendPrompt(true)}>I dont like these</button>
+            </div>
+          </>
         ) : (
           <p className="no-recipes">
-            {recipeType === RecipeTypes.Favorites
+            {recipeType === "favorites"
               ? "No favorite recipes yet."
               : "No suggested recipes yet."}
           </p>

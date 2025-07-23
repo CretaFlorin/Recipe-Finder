@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import OpenAI from 'openai';
 
 @Injectable()
 export class OpenAIService {
   private openai: OpenAI;
 
-  constructor() {
+  constructor(private configService: ConfigService) {
     this.openai = new OpenAI({
-      apiKey:
-        '',
+      apiKey: this.configService.get<string>('OPENAI_API_KEY'),
     });
   }
 

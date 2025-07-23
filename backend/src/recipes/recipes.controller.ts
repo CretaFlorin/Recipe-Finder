@@ -19,11 +19,28 @@ export class RecipesController {
     return this.recipesService.getAllRecipes();
   }
 
+  @Get('favorites')
+  async getFavoriteRecipes(): Promise<Recipe[]> {
+    return this.recipesService.getFavoriteRecipes();
+  }
+
   @Get(':id')
   async getRecipe(@Param('id') id: string): Promise<Recipe | null> {
     return this.recipesService.getRecipe(+id);
   }
-  
+
+  @Patch(':id/complete')
+  async completeRecipe(
+    @Param('id') id: string,
+    @Body() body: { ingredients: string[]; instructions: string[] },
+  ): Promise<Recipe> {
+    return this.recipesService.completeRecipe(
+      +id,
+      JSON.stringify(body.ingredients),
+      JSON.stringify(body.instructions),
+    );
+  }
+
   @Post()
   async createRecipe(@Body() data: Prisma.RecipeCreateInput): Promise<Recipe> {
     return this.recipesService.createRecipe(data);

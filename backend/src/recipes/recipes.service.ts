@@ -25,6 +25,14 @@ export class RecipesService {
     return (await this.prisma.recipe.findMany()) as Recipe[];
   }
 
+  async getFavoriteRecipes(): Promise<Recipe[]> {
+    return this.prisma.recipe.findMany({
+      where: {
+        favorite: true,
+      },
+    });
+  }
+
   async getRecipe(id: number): Promise<Recipe | null> {
     const recipe = await this.prisma.recipe.findUnique({
       where: { id: id },
@@ -52,6 +60,20 @@ export class RecipesService {
     return await this.prisma.recipe.update({
       where: { id },
       data: { favorite },
+    });
+  }
+
+  async completeRecipe(
+    id: number,
+    ingredients: string,
+    instructions: string,
+  ): Promise<Recipe> {
+    return this.prisma.recipe.update({
+      where: { id },
+      data: {
+        ingredients,
+        instructions,
+      },
     });
   }
 }

@@ -1,20 +1,27 @@
 .recipe {
   width: auto;
-  height: auto;
-  margin-top: 64px;
+  height: 100vh;
 
   display: flex;
   justify-content: center;
   align-items: flex-start;
   gap: 64px;
 
+  overflow: hidden;
+
   &__img-desc {
+    padding-top: 64px;
+
     width: 400px;
-    height: auto;
+    height: 80vh;
+    position: sticky;
+    top: 0;
+    overflow: hidden;
     //
     display: flex;
     flex-direction: column;
     gap: 64px;
+    align-self: flex-start;
 
     img {
       width: 400px;
@@ -43,6 +50,7 @@
           font-size: 24px;
           line-height: 1.2;
           letter-spacing: -0.5px;
+          text-wrap: wrap;
         }
 
         .duration {
@@ -71,12 +79,15 @@
   }
 
   &__details {
-    width: auto;
-    height: auto;
+    width: 400px;
+    height: 85vh;
     //
     display: flex;
     flex-direction: column;
     gap: 64px;
+    margin-top: 64px;
+
+    overflow-y: scroll;
 
     .ingredients {
       width: 400px;
@@ -87,7 +98,6 @@
       gap: 8px;
 
       &__title {
-        height: 23px;
         font-family: "Outfit", sans-serif;
         line-height: 1.4rem;
       }
@@ -124,10 +134,61 @@
       width: 400px;
 
       &__title {
+        font-family: "Outfit", sans-serif;
+        line-height: 1.4rem;
       }
 
-      &__title {
+      &__list {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+
+        .list-item {
+          height: auto;
+          line-height: 1.4rem;
+          transform: translateX(-18px);
+        }
       }
+    }
+  }
+}
+
+@media (max-width: 600px) {
+  .recipe {
+    width: 100%;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 0;
+    align-items: center;
+
+    &__img-desc {
+      width: 300px;
+      height: 40%;
+      padding-top: 16px;
+      position: sticky;
+      top: 0;
+      overflow: hidden;
+      //
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      align-self: center;
+
+      img {
+        width: 150px;
+        height: 150px;
+        align-self: center;
+      }
+
+      .description {
+        width: inherit;
+      }
+    }
+
+    &__details {
+      width: 300px;
+      height: 60%;
+      margin-top: 0;
     }
   }
 }
